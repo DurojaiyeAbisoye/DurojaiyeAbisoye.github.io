@@ -271,6 +271,20 @@ const postTemplate = (data, content) => {
 </html>`;
 };
 
+// Helper: Convert filename to display title
+function getDisplayTitle(filename) {
+  // Remove .md extension
+  let title = filename.replace('.md', '');
+  // Remove YYYY-MM-DD date prefix
+  title = title.replace(/^\d{4}-\d{2}-\d{2}-/, '');
+  // Replace dashes with spaces and capitalize
+  title = title
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+  return title;
+}
+
 // Build function
 function buildBlog() {
   try {
@@ -288,6 +302,8 @@ function buildBlog() {
 
     console.log(`Building ${files.length} blog post(s)...`);
 
+    const posts = [];
+
     files.forEach(file => {
       const filePath = path.join(POSTS_DIR, file);
       const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -300,7 +316,24 @@ function buildBlog() {
       fs.writeFileSync(outputPath, rendered);
 
       console.log(`  ✓ ${file} → ${outputName}`);
+
+      // Collect post metadata for posts.json
+      posts.push({
+        title: data.title || getDisplayTitle(file),
+        date: data.date || '',
+        tags: data.tags || [],
+        url: `/blog/dist/${outputName}`,
+        displayTitle: getDisplayTitle(file)
+      });
     });
+
+    // Sort posts by date (newest first)
+    posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Write posts.json for auto-linking
+    const postsJsonPath = path.join(DIST_DIR, '..', 'posts.json');
+    fs.writeFileSync(postsJsonPath, JSON.stringify(posts, null, 2));
+    console.log(`  ✓ Generated blog/posts.json (${posts.length} posts)`);
 
     console.log('Build complete!');
   } catch (err) {
