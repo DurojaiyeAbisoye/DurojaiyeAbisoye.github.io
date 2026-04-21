@@ -218,7 +218,7 @@ const postTemplate = (data, content) => {
   <div class="cursor-ring"></div>
 
   <nav>
-    <a href="/" class="nav-logo"><span>D</span></a>
+    <a href="/" class="nav-logo">D<span>.</span>A</a>
     <a href="/" class="nav-back">← Back</a>
   </nav>
 

@@ -6,3 +6,6 @@ DEPLOY_GUIDE.md
 HOW_IT_WORKS.md
 blog/README.md
 blog/post-template.html
+blog/posts/
+blog/dist/
+blog/posts.json
