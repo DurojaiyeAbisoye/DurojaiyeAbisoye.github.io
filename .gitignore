@@ -1,3 +1,8 @@
 node_modules/
 .DS_Store
 *.log
+BLOG_GUIDE.md
+DEPLOY_GUIDE.md
+HOW_IT_WORKS.md
+blog/README.md
+blog/post-template.html
