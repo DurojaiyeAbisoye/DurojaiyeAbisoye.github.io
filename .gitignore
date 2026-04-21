@@ -8,4 +8,4 @@ blog/README.md
 blog/post-template.html
 blog/posts/2026-04-21-getting-started.md
 blog/dist/2026-04-21-getting-started.html
-#blog/posts.json
+blog/posts.json
