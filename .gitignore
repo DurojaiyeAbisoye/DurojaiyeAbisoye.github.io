@@ -1,1 +1,11 @@
-*.md
+*node_modules/
+.DS_Store
+*.log
+BLOG_GUIDE.md
+DEPLOY_GUIDE.md
+HOW_IT_WORKS.md
+blog/README.md
+blog/post-template.html
+blog/posts/2026-04-21-getting-started.md
+blog/dist/2026-04-21-getting-started.html
+blog/posts.json
