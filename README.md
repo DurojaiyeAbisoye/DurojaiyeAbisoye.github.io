@@ -1,4 +1,4 @@
-# Durojaiye Abisoye's Portfolio & Blog
+# Durojaiye Abisoye's Portfolio Website & Blog
 
 Welcome to my personal website and blog repository. This is a static site hosted on GitHub Pages built with HTML, CSS, JavaScript.
 
