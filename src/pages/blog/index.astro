@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const allPosts = posts.map((p) => ({
+  title: p.data.title,
+  summary: p.data.summary || '',
+  date: p.data.date.toISOString().slice(0, 10),
+  slug: p.slug,
+  tags: p.data.tags || [],
+}));
+---
+
+<BaseLayout title="Blog — Durojaiye Abisoye">
+  <Nav />
+  <main class="container" style="padding-top: 7rem; padding-bottom: 4rem;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Blog</h1>
+    <p class="muted" style="margin-bottom: 3rem;">
+      Notes on machine learning, data, and building things.
+    </p>
+
+    {posts.length === 0 ? (
+      <p class="muted">No posts yet.</p>
+    ) : (
+      <div class="post-list">
+        {posts.map((post) => (
+          <a href={`/blog/${post.slug}`} class="post-item">
+            <time class="dim">{post.data.date.toISOString().slice(0, 10)}</time>
+            <h2>{post.data.title}</h2>
+            {post.data.summary && <p class="muted">{post.data.summary}</p>}
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .post-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .post-item {
+    display: block;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+  }
+
+  .post-item:first-child {
+    border-top: 1px solid var(--border);
+  }
+
+  .post-item:hover h2 {
+    color: var(--silver);
+  }
+
+  time {
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.35rem;
+  }
+</style>
+
+<script define:vars={{ allPosts }}>
+  const modal = document.getElementById('search-modal');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const openBtn = document.getElementById('search-btn');
+
+  function openSearch() {
+    if (!modal || !input || !results) return;
+    modal.hidden = false;
+    input.value = '';
+    results.innerHTML = '';
+    input.focus();
+  }
+
+  function closeSearch() {
+    if (modal) modal.hidden = true;
+  }
+
+  openBtn?.addEventListener('click', openSearch);
+  modal?.querySelector('.search-backdrop')?.addEventListener('click', closeSearch);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      openSearch();
+    }
+    if (e.key === 'Escape') closeSearch();
+  });
+
+  input?.addEventListener('input', () => {
+    if (!results) return;
+    const q = input.value.trim().toLowerCase();
+    if (!q) {
+      results.innerHTML = '';
+      return;
+    }
+
+    const matches = allPosts.filter((p) => {
+      const hay = `${p.title} ${p.summary} ${p.tags.join(' ')}`.toLowerCase();
+      return hay.includes(q);
+    });
+
+    if (matches.length === 0) {
+      results.innerHTML = `<div class="empty">No posts found</div>`;
+      return;
+    }
+
+    results.innerHTML = matches
+      .map(
+        (p) => `
+      <a href="/blog/${p.slug}">
+        <div class="title">${p.title}</div>
+        <div class="meta">${p.date}${p.tags.length ? ' · ' + p.tags.join(', ') : ''}</div>
+      </a>
+    `
+      )
+      .join('');
+  });
+</script>

@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 4);
+---
+
+<section class="section" id="blog">
+  <div class="container">
+    <div class="header-row">
+      <h2 class="section-title" style="margin-bottom: 0;">Latest writing</h2>
+      <a href="/blog" class="view-all">View all →</a>
+    </div>
+
+    {posts.length === 0 ? (
+      <p class="muted">No posts yet.</p>
+    ) : (
+      <div class="post-list">
+        {posts.map((post) => (
+          <a href={`/blog/${post.slug}`} class="post-item">
+            <time class="dim">{post.data.date.toISOString().slice(0, 10)}</time>
+            <h3>{post.data.title}</h3>
+            {post.data.summary && <p class="muted">{post.data.summary}</p>}
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2rem;
+  }
+
+  .view-all {
+    font-size: 0.9rem;
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .post-item {
+    display: block;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+  }
+
+  .post-item:first-child {
+    border-top: 1px solid var(--border);
+  }
+
+  .post-item:hover h3 {
+    color: var(--silver);
+  }
+
+  time {
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.35rem;
+  }
+
+  p {
+    font-size: 0.95rem;
+  }
+</style>

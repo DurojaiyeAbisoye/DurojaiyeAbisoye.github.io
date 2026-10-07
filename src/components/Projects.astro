@@ -1,0 +1,92 @@
+---
+const projects = [
+  {
+    title: 'Cocoa Disease Detection',
+    description:
+      '4th place solution to the Amini Cocoa Contamination Challenge on Zindi. Used RF-DETR Large with EMA weights and Weighted Boxes Fusion. Achieved AP50 of 0.803.',
+    tags: ['Python', 'PyTorch', 'Object Detection'],
+    link: 'https://github.com/DurojaiyeAbisoye/zindi-amini-cocoa-detection-challenge-4th-place-solution',
+  },
+];
+---
+
+<section class="section" id="projects">
+  <div class="container">
+    <h2 class="section-title">Projects</h2>
+
+    <div class="project-list">
+      {projects.map((p) => (
+        <article class="project">
+          <div class="project-header">
+            <h3>{p.title}</h3>
+            {p.link && (
+              <a href={p.link} target="_blank" rel="noopener" class="project-link">
+                GitHub →
+              </a>
+            )}
+          </div>
+          <p class="project-desc">{p.description}</p>
+          <div class="tags">
+            {p.tags.map((t) => (
+              <span class="tag">{t}</span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .project {
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .project:first-child {
+    border-top: 1px solid var(--border);
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+  }
+
+  h3 {
+    font-size: 1.15rem;
+  }
+
+  .project-link {
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .project-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+</style>
