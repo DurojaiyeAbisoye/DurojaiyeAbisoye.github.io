@@ -4,7 +4,7 @@ import { buildSearchIndex, searchEntries } from '../src/lib/search.js';
 
 const date = new Date('2025-01-01T00:00:00.000Z');
 
-test('builds a full-text index across published content collections', () => {
+test('builds a full-text index of published blog posts', () => {
   const index = buildSearchIndex([
     {
       type: 'Blog',
@@ -22,24 +22,12 @@ test('builds a full-text index across published content collections', () => {
         },
       ],
     },
-    {
-      type: 'Book review',
-      basePath: '/books',
-      entries: [{
-        data: { title: 'ML Systems', author: 'A. Author', date, summary: 'A field guide.' },
-        body: 'Chapters on data engineering.',
-        slug: 'ml-systems',
-      }],
-    },
   ]);
 
   assert.deepEqual(index.map((entry) => entry.href), [
     '/blog/production-models',
-    '/books/ml-systems',
   ]);
   assert.equal(searchEntries(index, 'feature distributions')[0].title, 'Production models');
-  assert.equal(searchEntries(index, 'A. Author')[0].type, 'Book review');
-  assert.equal(searchEntries(index, 'data engineering')[0].type, 'Book review');
   assert.deepEqual(searchEntries(index, 'draft must not'), []);
 });
 

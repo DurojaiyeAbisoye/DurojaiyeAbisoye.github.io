@@ -2,19 +2,14 @@
 import { getCollection } from 'astro:content';
 import { buildSearchIndex } from '../lib/search.js';
 
-const [blog, books] = await Promise.all([
-  getCollection('blog'),
-  getCollection('books'),
-]);
+const blog = await getCollection('blog');
 
 const searchableEntries = buildSearchIndex([
   { entries: blog, type: 'Blog', basePath: '/blog' },
-  { entries: books, type: 'Book review', basePath: '/books' },
 ]);
 
 const links = [
   { href: '/blog', label: 'Blog' },
-  { href: '/books', label: 'Book reviews' },
   { href: '/rss.xml', label: 'RSS' },
 ];
 ---
@@ -240,7 +235,7 @@ const links = [
   }
   .links a,
   .nav-link {
-    font-size: 0.875rem;
+    font-size: 1rem;
     color: var(--text-muted);
   }
   .links a:hover,
