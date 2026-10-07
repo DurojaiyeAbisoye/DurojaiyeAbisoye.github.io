@@ -46,11 +46,14 @@ const links = [
       <a
         href="https://drive.google.com/file/d/1urTpC48Zsf-uCWZtGkd-lW1EUfFmlhF5/view"
         target="_blank"
-        rel="noopener"
-        class="btn"
-        style="padding: 0.45rem 0.9rem; font-size: 0.8rem;"
+        rel="noopener noreferrer"
+        class="nav-link resume-link"
       >
-        CV
+        Resume
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M5 3h8v8M13 3 6 10"></path>
+          <path d="M11 9v4H3V5h4"></path>
+        </svg>
       </a>
 
       <button id="search-btn" class="search-btn" aria-label="Search site" aria-haspopup="dialog">
@@ -235,11 +238,27 @@ const links = [
     gap: 1.25rem;
     list-style: none;
   }
-  .links a {
+  .links a,
+  .nav-link {
     font-size: 0.875rem;
     color: var(--text-muted);
   }
-  .links a:hover { color: var(--white); }
+  .links a:hover,
+  .nav-link:hover { color: var(--white); }
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .resume-link svg {
+    width: 0.8rem;
+    height: 0.8rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
   .mobile-nav-toggle {
     display: none;
     align-items: center;
