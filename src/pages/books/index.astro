@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection } from 'astro:content';
+
+const entries = (await getCollection('books'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout title="Book reviews — Durojaiye Abisoye">
+  <Nav />
+  <main class="container" style="padding-top: 7rem; padding-bottom: 4rem;">
+    <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Book reviews</h1>
+    <p class="muted" style="margin-bottom: 3rem;">Reviews of books I've read.</p>
+    {entries.length === 0 ? (
+      <p class="muted">No reviews yet.</p>
+    ) : (
+      <div class="post-list">
+        {entries.map((entry) => (
+          <a href={`/books/${entry.slug}`} class="post-item">
+            <time class="dim">{entry.data.date.toISOString().slice(0, 10)}</time>
+            <h2>{entry.data.title}</h2>
+            <p class="muted">
+              {entry.data.author}{entry.data.rating ? ` · ${entry.data.rating}/5` : ''}
+            </p>
+            {entry.data.summary && <p class="muted">{entry.data.summary}</p>}
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .post-list { display: flex; flex-direction: column; }
+  .post-item {
+    display: block;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    color: inherit;
+  }
+  .post-item:first-child { border-top: 1px solid var(--border); }
+  .post-item:hover h2 { color: var(--silver); }
+  time { font-size: 0.8rem; display: block; margin-bottom: 0.35rem; }
+  h2 { font-size: 1.2rem; margin-bottom: 0.35rem; }
+</style>

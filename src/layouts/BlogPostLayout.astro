@@ -3,7 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 
-const { frontmatter } = Astro.props;
+const { frontmatter, seriesInfo } = Astro.props;
 ---
 
 <BaseLayout title={`${frontmatter.title} — Durojaiye Abisoye`}>
@@ -16,15 +16,21 @@ const { frontmatter } = Astro.props;
             ? frontmatter.date.toISOString().slice(0, 10)
             : frontmatter.date}
           {frontmatter.tags && frontmatter.tags.length > 0 && (
-            <>
-              {' · '}
-              {frontmatter.tags.join(', ')}
-            </>
+            <> · {frontmatter.tags.join(', ')}</>
           )}
         </p>
+
+        {seriesInfo && (
+          <p class="series-label">
+            Part {seriesInfo.part} of {seriesInfo.total}
+            · {seriesInfo.name.replace(/-/g, ' ')}
+          </p>
+        )}
+
         <h1 style="font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.2;">
           {frontmatter.title}
         </h1>
+
         {frontmatter.summary && (
           <p class="muted" style="margin-top: 1rem; font-size: 1.1rem;">
             {frontmatter.summary}
@@ -35,12 +41,42 @@ const { frontmatter } = Astro.props;
       <div class="prose">
         <slot />
       </div>
+
+      {seriesInfo && (seriesInfo.prev || seriesInfo.next) && (
+        <nav class="series-nav">
+          {seriesInfo.prev ? (
+            <a href={`/blog/${seriesInfo.prev.slug}`}>
+              ← {seriesInfo.prev.data.title}
+            </a>
+          ) : <span></span>}
+          {seriesInfo.next ? (
+            <a href={`/blog/${seriesInfo.next.slug}`}>
+              {seriesInfo.next.data.title} →
+            </a>
+          ) : <span></span>}
+        </nav>
+      )}
     </article>
   </main>
   <Footer />
 </BaseLayout>
 
 <style>
+  .series-label {
+    font-size: 0.85rem;
+    color: var(--silver);
+    text-transform: capitalize;
+    margin-bottom: 0.75rem;
+  }
+  .series-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
   .prose {
     font-size: 1.05rem;
     line-height: 1.75;

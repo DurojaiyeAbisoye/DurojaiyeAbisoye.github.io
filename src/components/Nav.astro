@@ -1,8 +1,21 @@
 ---
+import { getCollection } from 'astro:content';
+import { buildSearchIndex } from '../lib/search.js';
+
+const [blog, books] = await Promise.all([
+  getCollection('blog'),
+  getCollection('books'),
+]);
+
+const searchableEntries = buildSearchIndex([
+  { entries: blog, type: 'Blog', basePath: '/blog' },
+  { entries: books, type: 'Book review', basePath: '/books' },
+]);
+
 const links = [
-  { href: '/#projects', label: 'Projects' },
   { href: '/blog', label: 'Blog' },
-  { href: '/#contact', label: 'Contact' },
+  { href: '/books', label: 'Book reviews' },
+  { href: '/rss.xml', label: 'RSS' },
 ];
 ---
 
@@ -11,13 +24,26 @@ const links = [
     <a href="/" class="logo">Abisoye</a>
 
     <div class="nav-right">
-      <ul class="links">
+      <ul class="links desktop-links">
         {links.map((l) => (
           <li><a href={l.href}>{l.label}</a></li>
         ))}
       </ul>
 
-      <button id="search-btn" class="search-btn" aria-label="Search">
+      <button
+        id="mobile-nav-toggle"
+        class="mobile-nav-toggle"
+        type="button"
+        aria-label="Open navigation"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+
+      <button id="search-btn" class="search-btn" aria-label="Search site" aria-haspopup="dialog">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.35-4.35"></path>
@@ -35,34 +61,157 @@ const links = [
       </a>
     </div>
   </nav>
+  <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden>
+    <ul>
+      {links.map((l) => (
+        <li><a href={l.href}>{l.label}</a></li>
+      ))}
+    </ul>
+  </nav>
 </header>
 
-<!-- Search Modal -->
-<div id="search-modal" class="search-modal" hidden>
-  <div class="search-backdrop"></div>
+<div
+  id="search-modal"
+  class="search-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Search site"
+  data-search-index={JSON.stringify(searchableEntries)}
+  hidden
+>
+  <div class="search-backdrop" data-search-close></div>
   <div class="search-panel">
-    <input
-      type="search"
-      id="search-input"
-      placeholder="Search posts..."
-      autocomplete="off"
-    />
-    <div id="search-results" class="search-results"></div>
+    <input type="search" id="search-input" placeholder="Search site content..." autocomplete="off" aria-label="Search site content" />
+    <div id="search-results" class="search-results" aria-live="polite"></div>
   </div>
 </div>
+
+<script>
+  import { searchEntries } from '../lib/search.js';
+
+  const modal = document.getElementById('search-modal');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const openButton = document.getElementById('search-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuToggle = document.getElementById('mobile-nav-toggle');
+  const searchableEntries = JSON.parse(modal?.dataset.searchIndex || '[]');
+  let previouslyFocused = null;
+
+  function closeMobileMenu() {
+    if (!mobileMenu || !mobileMenuToggle) return;
+    mobileMenu.hidden = true;
+    mobileMenuToggle.setAttribute('aria-expanded', 'false');
+    mobileMenuToggle.setAttribute('aria-label', 'Open navigation');
+  }
+
+  function toggleMobileMenu() {
+    if (!mobileMenu || !mobileMenuToggle) return;
+    const isOpen = mobileMenu.hidden;
+    mobileMenu.hidden = !isOpen;
+    mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
+    mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+  }
+
+  function closeSearch() {
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    previouslyFocused?.focus();
+  }
+
+  function openSearch() {
+    if (!modal || !input || !results) return;
+    previouslyFocused = document.activeElement;
+    modal.hidden = false;
+    input.value = '';
+    results.replaceChildren();
+    input.focus();
+  }
+
+  function renderResults(query) {
+    if (!results) return;
+    results.replaceChildren();
+    if (!query) return;
+
+    const matches = searchEntries(searchableEntries, query);
+
+    if (matches.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = 'No results found';
+      results.append(empty);
+      return;
+    }
+
+    for (const entry of matches) {
+      const link = document.createElement('a');
+      link.href = entry.href;
+
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = entry.title;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = `${entry.type} · ${entry.date}${entry.tags.length ? ` · ${entry.tags.join(', ')}` : ''}`;
+
+      link.append(title, meta);
+      results.append(link);
+    }
+  }
+
+  openButton?.addEventListener('click', openSearch);
+  mobileMenuToggle?.addEventListener('click', toggleMobileMenu);
+  mobileMenu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', closeMobileMenu);
+  });
+  modal?.querySelector('[data-search-close]')?.addEventListener('click', closeSearch);
+  input?.addEventListener('input', () => {
+    renderResults(input.value.trim().toLowerCase());
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      openSearch();
+      return;
+    }
+
+    if (event.key === 'Escape' && mobileMenu && !mobileMenu.hidden) {
+      closeMobileMenu();
+      mobileMenuToggle?.focus();
+      return;
+    }
+
+    if (!modal || modal.hidden) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeSearch();
+    } else if (event.key === 'Tab') {
+      const focusableElements = modal.querySelectorAll('input:not([disabled]), a[href], button:not([disabled])');
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+  });
+</script>
 
 <style>
   .nav-wrapper {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     z-index: 50;
     background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
   }
-
   .nav {
     max-width: 900px;
     margin: 0 auto;
@@ -71,34 +220,39 @@ const links = [
     align-items: center;
     justify-content: space-between;
   }
-
   .logo {
     font-weight: 600;
     font-size: 1.05rem;
     color: var(--white);
   }
-
   .nav-right {
     display: flex;
     align-items: center;
     gap: 1.5rem;
   }
-
   .links {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.25rem;
     list-style: none;
   }
-
   .links a {
     font-size: 0.875rem;
     color: var(--text-muted);
   }
-
-  .links a:hover {
-    color: var(--white);
+  .links a:hover { color: var(--white); }
+  .mobile-nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.4rem;
   }
-
+  .mobile-nav-toggle:hover { color: var(--white); }
+  .mobile-menu { display: none; }
   .search-btn {
     background: none;
     border: none;
@@ -107,11 +261,7 @@ const links = [
     padding: 0.25rem;
     display: flex;
   }
-
-  .search-btn:hover {
-    color: var(--white);
-  }
-
+  .search-btn:hover { color: var(--white); }
   .search-modal {
     position: fixed;
     inset: 0;
@@ -121,17 +271,12 @@ const links = [
     justify-content: center;
     padding-top: 15vh;
   }
-
-  .search-modal[hidden] {
-    display: none;
-  }
-
+  .search-modal[hidden] { display: none; }
   .search-backdrop {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
   }
-
   .search-panel {
     position: relative;
     width: min(560px, 92vw);
@@ -140,7 +285,6 @@ const links = [
     border-radius: 10px;
     overflow: hidden;
   }
-
   .search-panel input {
     border: none;
     border-bottom: 1px solid var(--border);
@@ -148,42 +292,43 @@ const links = [
     font-size: 1.05rem;
     padding: 1rem 1.25rem;
   }
-
   .search-results {
     max-height: 360px;
     overflow-y: auto;
   }
-
   .search-results a {
     display: block;
     padding: 0.9rem 1.25rem;
     border-bottom: 1px solid var(--border);
     color: var(--text);
   }
-
-  .search-results a:hover {
-    background: #181818;
-  }
-
-  .search-results .title {
-    font-weight: 500;
-    margin-bottom: 0.2rem;
-  }
-
-  .search-results .meta {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-  }
-
+  .search-results a:hover { background: #181818; }
+  .search-results .title { font-weight: 500; margin-bottom: 0.2rem; }
+  .search-results .meta { font-size: 0.8rem; color: var(--text-dim); }
   .search-results .empty {
     padding: 1.5rem;
     text-align: center;
     color: var(--text-dim);
   }
-
-  @media (max-width: 640px) {
-    .links {
-      display: none;
+  @media (max-width: 720px) {
+    .desktop-links { display: none; }
+    .mobile-nav-toggle { display: inline-flex; }
+    .mobile-menu:not([hidden]) {
+      display: block;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
     }
+    .mobile-menu ul {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0.5rem 1.5rem 1rem;
+      list-style: none;
+    }
+    .mobile-menu a {
+      display: block;
+      padding: 0.65rem 0;
+      color: var(--text-muted);
+    }
+    .mobile-menu a:hover { color: var(--white); }
   }
 </style>

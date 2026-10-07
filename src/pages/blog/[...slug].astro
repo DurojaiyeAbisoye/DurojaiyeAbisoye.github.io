@@ -12,8 +12,25 @@ export async function getStaticPaths() {
 
 const post = Astro.props;
 const { Content } = await post.render();
+
+let seriesInfo = null;
+if (post.data.series) {
+  const all = await getCollection('blog');
+  const seriesPosts = all
+    .filter((p) => p.data.series === post.data.series && !p.data.draft)
+    .sort((a, b) => (a.data.seriesPart ?? 0) - (b.data.seriesPart ?? 0));
+
+  const idx = seriesPosts.findIndex((p) => p.slug === post.slug);
+  seriesInfo = {
+    name: post.data.series,
+    part: post.data.seriesPart,
+    total: seriesPosts.length,
+    prev: seriesPosts[idx - 1] ?? null,
+    next: seriesPosts[idx + 1] ?? null,
+  };
+}
 ---
 
-<BlogPostLayout frontmatter={post.data}>
+<BlogPostLayout frontmatter={post.data} seriesInfo={seriesInfo}>
   <Content />
 </BlogPostLayout>

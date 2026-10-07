@@ -19,14 +19,25 @@
             occasionally breaking) ML systems in production.
         </p>
 
-        <div class="actions">
-            <a href="#projects" class="btn btn-primary">
-                View Projects
+        <div class="social-links" aria-label="Contact and social links">
+            <a href="mailto:abisoyeodurojaiye@gmail.com" aria-label="Email Abisoye" title="Email">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 5h18v14H3z"></path>
+                    <path d="m3 6 9 7 9-7"></path>
+                </svg>
             </a>
-            <a href="#contact" class="btn">
-                Get in touch
+            <a href="https://github.com/DurojaiyeAbisoye" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" title="GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 6v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.7a5.2 5.2 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.6S17.6 1.2 15 3.1a13 13 0 0 0-7 0C5.4 1.2 4.2 1.5 4.2 1.5a4.8 4.8 0 0 0-.1 3.6 5.2 5.2 0 0 0-1.4 3.6c0 5.2 3.2 6.4 6.2 6.7a3.4 3.4 0 0 0-.9 2.7V22"></path>
+                </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/abisoye-durojaiye" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" title="LinkedIn">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9v11M4 4v.01M9 20v-6.2c0-2.1 1.2-3.3 3-3.3s3 1.2 3 3.3V20m0-6.2c0-2.1 1.2-3.3 3-3.3s3 1.2 3 3.3V20"></path>
+                </svg>
             </a>
         </div>
+
     </div>
 </section>
 
@@ -64,15 +75,44 @@
 
     .bio {
         max-width: 480px;
-        margin: 0 auto 2.25rem;
+        margin: 0 auto 1.5rem;
         color: var(--text-muted);
         font-size: 1.05rem;
     }
 
-    .actions {
+    .social-links {
         display: flex;
-        gap: 0.75rem;
         justify-content: center;
-        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2.25rem;
     }
+
+    .social-links a {
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        color: var(--text-muted);
+        transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .social-links a:hover {
+        color: var(--white);
+        border-color: var(--silver);
+        background: var(--surface);
+    }
+
+    .social-links svg {
+        width: 1.2rem;
+        height: 1.2rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
 </style>
